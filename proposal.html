@@ -12,610 +12,316 @@
 </head>
 <body>
     <div id="root"></div>
-    
     <script type="text/babel">
-        const { useState } = React;
-        
-        const FileText = () => (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/>
-                <line x1="16" y1="17" x2="8" y2="17"/>
-                <polyline points="10 9 9 9 8 9"/>
-            </svg>
-        );
-        
-        const Download = () => (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-        );
+const { useState } = React;
 
-        function ProposalGenerator() {
-            // Input Data (copy from calculator)
-            const [clientName, setClientName] = useState('');
-            const [contactName, setContactName] = useState('');
-            const [industry, setIndustry] = useState('');
-            const [currentRevenue, setCurrentRevenue] = useState('');
-            const [revenueGoal, setRevenueGoal] = useState('');
-            const [ownerHours, setOwnerHours] = useState('');
-            const [biggestFrustration, setBiggestFrustration] = useState('');
-            
-            // Value Calculations (from calculator)
-            const [conservativeValue, setConservativeValue] = useState('');
-            const [midpointValue, setMidpointValue] = useState('');
-            const [aggressiveValue, setAggressiveValue] = useState('');
-            
-            // Quick Wins
-            const [quickWin1, setQuickWin1] = useState('');
-            const [quickWin2, setQuickWin2] = useState('');
-            const [quickWin3, setQuickWin3] = useState('');
-            
-            // Service Selection
-            const [includeAudit, setIncludeAudit] = useState(true);
-            const [includeImplementation, setIncludeImplementation] = useState(true);
-            const [includeFractional, setIncludeFractional] = useState(true);
-            
-            // Pricing (from calculator)
-            const [auditFee, setAuditFee] = useState('');
-            const [implementationFee, setImplementationFee] = useState('');
-            const [fractionalFee, setFractionalFee] = useState('');
-            
-            // Customization
-            const [yourName, setYourName] = useState('Ryan Grimes');
-            const [yourTitle, setYourTitle] = useState('Fractional COO & Operations Consultant');
-            const [yourPhone, setYourPhone] = useState('');
-            const [yourEmail, setYourEmail] = useState('');
-            const [proposalDate, setProposalDate] = useState(new Date().toISOString().split('T')[0]);
-            
-            const formatCurrency = (num) => {
-                const value = typeof num === 'string' ? parseFloat(num) : num;
-                return new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0,
-                }).format(value || 0);
-            };
-            
-            const downloadPDF = () => {
-                const element = document.getElementById('proposal-content');
-                const opt = {
-                    margin: 0.5,
-                    filename: `${clientName || 'Client'}_Operations_Proposal_${proposalDate}.pdf`,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2, useCORS: true },
-                    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-                };
-                
-                html2pdf().set(opt).from(element).save();
-            };
+const FileText = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+    </svg>
+);
 
-            const calcMidpoint = parseFloat(midpointValue) || 0;
-            const calcAuditROI = calcMidpoint > 0 && auditFee ? (calcMidpoint / parseFloat(auditFee)).toFixed(1) : 0;
-            const calcImplementationROI = calcMidpoint > 0 && implementationFee ? (calcMidpoint / parseFloat(implementationFee)).toFixed(1) : 0;
-            const calcFractionalROI = calcMidpoint > 0 && fractionalFee ? (calcMidpoint / (parseFloat(fractionalFee) * 6)).toFixed(1) : 0;
+const Download = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>
+);
 
-            return (
-                <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
-                    <div className="max-w-7xl mx-auto">
-                        {/* Header */}
-                        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-3">
-                                    <FileText />
-                                    <h1 className="text-3xl font-bold text-slate-800">Proposal Generator</h1>
-                                </div>
-                                <button
-                                    onClick={downloadPDF}
-                                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors"
-                                >
-                                    <Download />
-                                    <span>Download Proposal PDF</span>
-                                </button>
+function ProposalGenerator() {
+    const [clientName, setClientName] = useState('');
+    const [contactName, setContactName] = useState('');
+    const [industry, setIndustry] = useState('');
+    const [currentRevenue, setCurrentRevenue] = useState('');
+    const [revenueGoal, setRevenueGoal] = useState('');
+    const [ownerHours, setOwnerHours] = useState('');
+    const [biggestFrustration, setBiggestFrustration] = useState('');
+    const [conservativeValue, setConservativeValue] = useState('');
+    const [midpointValue, setMidpointValue] = useState('');
+    const [aggressiveValue, setAggressiveValue] = useState('');
+    const [quickWin1, setQuickWin1] = useState('');
+    const [quickWin2, setQuickWin2] = useState('');
+    const [quickWin3, setQuickWin3] = useState('');
+    const [includeAudit, setIncludeAudit] = useState(true);
+    const [includeImplementation, setIncludeImplementation] = useState(true);
+    const [includeFractional, setIncludeFractional] = useState(true);
+    const [auditFee, setAuditFee] = useState('');
+    const [implementationFee, setImplementationFee] = useState('');
+    const [fractionalFee, setFractionalFee] = useState('');
+    const [yourName, setYourName] = useState('Ryan Grimes');
+    const [yourTitle, setYourTitle] = useState('Fractional COO & Operations Consultant');
+    const [yourPhone, setYourPhone] = useState('');
+    const [yourEmail, setYourEmail] = useState('');
+    const [proposalDate, setProposalDate] = useState(new Date().toISOString().split('T')[0]);
+    
+    const formatCurrency = (num) => {
+        const value = typeof num === 'string' ? parseFloat(num) : num;
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        }).format(value || 0);
+    };
+    
+    const downloadPDF = () => {
+        const element = document.getElementById('proposal-content');
+        const opt = {
+            margin: [0.4, 0.4, 0.4, 0.4],
+            filename: `${clientName || 'Client'}_Operations_Proposal_${proposalDate}.pdf`,
+            image: { type: 'jpeg', quality: 0.95 },
+            html2canvas: { scale: 2, useCORS: true, letterRendering: true, logging: false },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait', compress: true },
+            pagebreak: { mode: ['avoid-all', 'css', 'legacy'], before: '.page-break-before', after: '.page-break-after', avoid: '.avoid-break' }
+        };
+        html2pdf().set(opt).from(element).save();
+    };
+
+    const calcMidpoint = parseFloat(midpointValue) || 0;
+    const calcAuditROI = calcMidpoint > 0 && auditFee ? (calcMidpoint / parseFloat(auditFee)).toFixed(1) : 0;
+    const calcImplementationROI = calcMidpoint > 0 && implementationFee ? (calcMidpoint / parseFloat(implementationFee)).toFixed(1) : 0;
+    const calcFractionalROI = calcMidpoint > 0 && fractionalFee ? (calcMidpoint / (parseFloat(fractionalFee) * 6)).toFixed(1) : 0;
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
+            <div className="max-w-7xl mx-auto">
+                <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                            <FileText />
+                            <h1 className="text-3xl font-bold text-slate-800">Proposal Generator</h1>
+                        </div>
+                        <button onClick={downloadPDF} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors">
+                            <Download />
+                            <span>Download Proposal PDF</span>
+                        </button>
+                    </div>
+                    <p className="text-slate-600">Transfer data from your calculator and generate a professional proposal</p>
+                </div>
+
+                <div className="grid lg:grid-cols-2 gap-6">
+                    <div className="space-y-6">
+                        <div className="bg-white rounded-lg shadow-lg p-6">
+                            <h2 className="text-xl font-bold text-slate-800 mb-4">Client Information</h2>
+                            <div className="space-y-4">
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Client Company Name</label><input type="text" value={clientName} onChange={(e) => setClientName(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="ABC Company" /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Contact Name</label><input type="text" value={contactName} onChange={(e) => setContactName(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="John Smith" /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Industry</label><input type="text" value={industry} onChange={(e) => setIndustry(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="Pool Service" /></div>
                             </div>
-                            <p className="text-slate-600">Transfer data from your calculator and generate a professional proposal</p>
                         </div>
 
-                        <div className="grid lg:grid-cols-2 gap-6">
-                            {/* Left Column - Input Form */}
-                            <div className="space-y-6">
-                                {/* Client Information */}
-                                <div className="bg-white rounded-lg shadow-lg p-6">
-                                    <h2 className="text-xl font-bold text-slate-800 mb-4">Client Information</h2>
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Client Company Name</label>
-                                            <input type="text" value={clientName} onChange={(e) => setClientName(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="ABC Company" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Contact Name</label>
-                                            <input type="text" value={contactName} onChange={(e) => setContactName(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="John Smith" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Industry</label>
-                                            <input type="text" value={industry} onChange={(e) => setIndustry(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="Pool Service" />
-                                        </div>
-                                    </div>
-                                </div>
+                        <div className="bg-white rounded-lg shadow-lg p-6">
+                            <h2 className="text-xl font-bold text-slate-800 mb-4">Business Metrics</h2>
+                            <div className="space-y-4">
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Current Annual Revenue ($)</label><input type="number" value={currentRevenue} onChange={(e) => setCurrentRevenue(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">12-Month Revenue Goal ($)</label><input type="number" value={revenueGoal} onChange={(e) => setRevenueGoal(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Owner Hours/Week</label><input type="number" value={ownerHours} onChange={(e) => setOwnerHours(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Biggest Frustration</label><textarea value={biggestFrustration} onChange={(e) => setBiggestFrustration(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" rows="2" /></div>
+                            </div>
+                        </div>
 
-                                {/* Business Metrics */}
-                                <div className="bg-white rounded-lg shadow-lg p-6">
-                                    <h2 className="text-xl font-bold text-slate-800 mb-4">Business Metrics (from Calculator)</h2>
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Current Annual Revenue ($)</label>
-                                            <input type="number" value={currentRevenue} onChange={(e) => setCurrentRevenue(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">12-Month Revenue Goal ($)</label>
-                                            <input type="number" value={revenueGoal} onChange={(e) => setRevenueGoal(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Owner Hours/Week</label>
-                                            <input type="number" value={ownerHours} onChange={(e) => setOwnerHours(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Biggest Frustration</label>
-                                            <textarea value={biggestFrustration} onChange={(e) => setBiggestFrustration(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" rows="2" />
-                                        </div>
-                                    </div>
-                                </div>
+                        <div className="bg-white rounded-lg shadow-lg p-6">
+                            <h2 className="text-xl font-bold text-slate-800 mb-4">Value Identified</h2>
+                            <div className="space-y-4">
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Conservative Value ($)</label><input type="number" value={conservativeValue} onChange={(e) => setConservativeValue(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Midpoint Value ($)</label><input type="number" value={midpointValue} onChange={(e) => setMidpointValue(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Aggressive Value ($)</label><input type="number" value={aggressiveValue} onChange={(e) => setAggressiveValue(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" /></div>
+                            </div>
+                        </div>
 
-                                {/* Value Calculations */}
-                                <div className="bg-white rounded-lg shadow-lg p-6">
-                                    <h2 className="text-xl font-bold text-slate-800 mb-4">Value Identified (from Calculator)</h2>
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Conservative Value ($)</label>
-                                            <input type="number" value={conservativeValue} onChange={(e) => setConservativeValue(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Midpoint Value ($)</label>
-                                            <input type="number" value={midpointValue} onChange={(e) => setMidpointValue(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Aggressive Value ($)</label>
-                                            <input type="number" value={aggressiveValue} onChange={(e) => setAggressiveValue(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" />
-                                        </div>
-                                    </div>
-                                </div>
+                        <div className="bg-white rounded-lg shadow-lg p-6">
+                            <h2 className="text-xl font-bold text-slate-800 mb-4">Quick Wins</h2>
+                            <div className="space-y-4">
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Quick Win #1</label><input type="text" value={quickWin1} onChange={(e) => setQuickWin1(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Quick Win #2</label><input type="text" value={quickWin2} onChange={(e) => setQuickWin2(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Quick Win #3</label><input type="text" value={quickWin3} onChange={(e) => setQuickWin3(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" /></div>
+                            </div>
+                        </div>
 
-                                {/* Quick Wins */}
-                                <div className="bg-white rounded-lg shadow-lg p-6">
-                                    <h2 className="text-xl font-bold text-slate-800 mb-4">Quick Wins (from Calculator)</h2>
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Quick Win #1</label>
-                                            <input type="text" value={quickWin1} onChange={(e) => setQuickWin1(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="Pricing review" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Quick Win #2</label>
-                                            <input type="text" value={quickWin2} onChange={(e) => setQuickWin2(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="Automate admin tasks" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Quick Win #3</label>
-                                            <input type="text" value={quickWin3} onChange={(e) => setQuickWin3(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="Create core SOPs" />
-                                        </div>
-                                    </div>
-                                </div>
+                        <div className="bg-white rounded-lg shadow-lg p-6">
+                            <h2 className="text-xl font-bold text-slate-800 mb-4">Services to Include</h2>
+                            <div className="space-y-4">
+                                <label className="flex items-center gap-3"><input type="checkbox" checked={includeAudit} onChange={(e) => setIncludeAudit(e.target.checked)} className="w-5 h-5" /><span className="font-medium">Operations Audit</span></label>
+                                {includeAudit && (<div className="ml-8"><label className="block text-sm font-medium text-slate-700 mb-1">Audit Fee ($)</label><input type="number" value={auditFee} onChange={(e) => setAuditFee(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" /></div>)}
+                                <label className="flex items-center gap-3"><input type="checkbox" checked={includeImplementation} onChange={(e) => setIncludeImplementation(e.target.checked)} className="w-5 h-5" /><span className="font-medium">90-Day Implementation</span></label>
+                                {includeImplementation && (<div className="ml-8"><label className="block text-sm font-medium text-slate-700 mb-1">Implementation Fee ($)</label><input type="number" value={implementationFee} onChange={(e) => setImplementationFee(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" /></div>)}
+                                <label className="flex items-center gap-3"><input type="checkbox" checked={includeFractional} onChange={(e) => setIncludeFractional(e.target.checked)} className="w-5 h-5" /><span className="font-medium">Fractional COO</span></label>
+                                {includeFractional && (<div className="ml-8"><label className="block text-sm font-medium text-slate-700 mb-1">Monthly Retainer ($)</label><input type="number" value={fractionalFee} onChange={(e) => setFractionalFee(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" /></div>)}
+                            </div>
+                        </div>
 
-                                {/* Service Selection */}
-                                <div className="bg-white rounded-lg shadow-lg p-6">
-                                    <h2 className="text-xl font-bold text-slate-800 mb-4">Services to Include</h2>
-                                    <div className="space-y-4">
-                                        <label className="flex items-center gap-3">
-                                            <input type="checkbox" checked={includeAudit} onChange={(e) => setIncludeAudit(e.target.checked)} className="w-5 h-5" />
-                                            <span className="font-medium">Operations Audit</span>
-                                        </label>
-                                        {includeAudit && (
-                                            <div className="ml-8">
-                                                <label className="block text-sm font-medium text-slate-700 mb-1">Audit Fee ($)</label>
-                                                <input type="number" value={auditFee} onChange={(e) => setAuditFee(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" />
-                                            </div>
-                                        )}
-                                        
-                                        <label className="flex items-center gap-3">
-                                            <input type="checkbox" checked={includeImplementation} onChange={(e) => setIncludeImplementation(e.target.checked)} className="w-5 h-5" />
-                                            <span className="font-medium">90-Day Implementation</span>
-                                        </label>
-                                        {includeImplementation && (
-                                            <div className="ml-8">
-                                                <label className="block text-sm font-medium text-slate-700 mb-1">Implementation Fee ($)</label>
-                                                <input type="number" value={implementationFee} onChange={(e) => setImplementationFee(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" />
-                                            </div>
-                                        )}
-                                        
-                                        <label className="flex items-center gap-3">
-                                            <input type="checkbox" checked={includeFractional} onChange={(e) => setIncludeFractional(e.target.checked)} className="w-5 h-5" />
-                                            <span className="font-medium">Fractional COO</span>
-                                        </label>
-                                        {includeFractional && (
-                                            <div className="ml-8">
-                                                <label className="block text-sm font-medium text-slate-700 mb-1">Monthly Retainer ($)</label>
-                                                <input type="number" value={fractionalFee} onChange={(e) => setFractionalFee(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" />
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
+                        <div className="bg-white rounded-lg shadow-lg p-6">
+                            <h2 className="text-xl font-bold text-slate-800 mb-4">Your Information</h2>
+                            <div className="space-y-4">
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Your Name</label><input type="text" value={yourName} onChange={(e) => setYourName(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Your Title</label><input type="text" value={yourTitle} onChange={(e) => setYourTitle(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Phone</label><input type="tel" value={yourPhone} onChange={(e) => setYourPhone(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Email</label><input type="email" value={yourEmail} onChange={(e) => setYourEmail(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Proposal Date</label><input type="date" value={proposalDate} onChange={(e) => setProposalDate(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" /></div>
+                            </div>
+                        </div>
+                    </div>
 
-                                {/* Your Information */}
-                                <div className="bg-white rounded-lg shadow-lg p-6">
-                                    <h2 className="text-xl font-bold text-slate-800 mb-4">Your Information</h2>
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Your Name</label>
-                                            <input type="text" value={yourName} onChange={(e) => setYourName(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Your Title</label>
-                                            <input type="text" value={yourTitle} onChange={(e) => setYourTitle(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
-                                            <input type="tel" value={yourPhone} onChange={(e) => setYourPhone(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-                                            <input type="email" value={yourEmail} onChange={(e) => setYourEmail(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Proposal Date</label>
-                                            <input type="date" value={proposalDate} onChange={(e) => setProposalDate(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md" />
-                                        </div>
-                                    </div>
+                    <div className="lg:sticky lg:top-4 h-fit">
+                        <div id="proposal-content" className="bg-white rounded-lg shadow-lg p-6 space-y-6 max-w-[7.5in]" style={{fontSize: '11pt', lineHeight: '1.4'}}>
+                            <div className="border-b-4 border-blue-600 pb-4 avoid-break">
+                                <h1 className="text-3xl font-bold text-slate-900 mb-2">Operations Consulting Proposal</h1>
+                                <div className="text-slate-600" style={{fontSize: '10pt'}}>
+                                    <p className="text-base font-semibold">{clientName || '[Client Name]'}</p>
+                                    <p className="text-sm">Prepared for: {contactName || '[Contact Name]'}</p>
+                                    <p className="text-sm">Date: {proposalDate}</p>
                                 </div>
                             </div>
 
-                            {/* Right Column - Proposal Preview */}
-                            <div className="lg:sticky lg:top-4 h-fit">
-                                <div id="proposal-content" className="bg-white rounded-lg shadow-lg p-8 space-y-8">
-                                    {/* Header */}
-                                    <div className="border-b-4 border-blue-600 pb-6">
-                                        <h1 className="text-4xl font-bold text-slate-900 mb-2">Operations Consulting Proposal</h1>
-                                        <div className="text-slate-600">
-                                            <p className="text-lg font-semibold">{clientName || '[Client Name]'}</p>
-                                            <p>Prepared for: {contactName || '[Contact Name]'}</p>
-                                            <p>Date: {proposalDate}</p>
-                                        </div>
-                                    </div>
+                            <div className="avoid-break">
+                                <h2 className="text-xl font-bold text-slate-900 mb-3">Executive Summary</h2>
+                                <div className="bg-blue-50 border-l-4 border-blue-600 p-3 mb-3">
+                                    <p className="font-semibold text-base text-blue-900">Bottom Line Up Front:</p>
+                                    <p className="text-slate-700 mt-1 text-sm">Based on our discovery conversation, I've identified <span className="font-bold text-blue-600">{formatCurrency(calcMidpoint)}</span> in annual value opportunities for {clientName || 'your business'}. This proposal outlines how we can capture this value together through systematic operational improvements.</p>
+                                </div>
+                                <p className="text-slate-700 leading-relaxed text-sm mb-2">{contactName || '[Contact Name]'}, you shared that {biggestFrustration || '[their biggest frustration]'}. You're currently working {ownerHours || '[X]'} hours per week, and you want to grow from {formatCurrency(currentRevenue || 0)} to {formatCurrency(revenueGoal || 0)} in the next 12 months.</p>
+                                <p className="text-slate-700 leading-relaxed text-sm">The challenge isn't working harder—it's building the operational systems that allow you to scale without burning out. That's exactly what I help {industry || '[industry]'} business owners do.</p>
+                            </div>
 
-                                    {/* Executive Summary */}
-                                    <div>
-                                        <h2 className="text-2xl font-bold text-slate-900 mb-4">Executive Summary</h2>
-                                        <div className="bg-blue-50 border-l-4 border-blue-600 p-4 mb-4">
-                                            <p className="font-semibold text-lg text-blue-900">Bottom Line Up Front:</p>
-                                            <p className="text-slate-700 mt-2">
-                                                Based on our discovery conversation, I've identified <span className="font-bold text-blue-600">{formatCurrency(calcMidpoint)}</span> in 
-                                                annual value opportunities for {clientName || 'your business'}. This proposal outlines how we can capture this value together 
-                                                through systematic operational improvements.
-                                            </p>
-                                        </div>
-                                        <p className="text-slate-700 leading-relaxed">
-                                            {contactName || '[Contact Name]'}, you shared that {biggestFrustration || '[their biggest frustration]'}. 
-                                            You're currently working {ownerHours || '[X]'} hours per week, and you want to grow from {formatCurrency(currentRevenue || 0)} to {formatCurrency(revenueGoal || 0)} in 
-                                            the next 12 months.
-                                        </p>
-                                        <p className="text-slate-700 leading-relaxed mt-4">
-                                            The challenge isn't working harder—it's building the operational systems that allow you to scale without burning out. 
-                                            That's exactly what I help {industry || '[industry]'} business owners do.
-                                        </p>
-                                    </div>
+                            <div className="avoid-break page-break-before">
+                                <h2 className="text-xl font-bold text-slate-900 mb-3">Current Situation</h2>
+                                <div className="bg-slate-50 rounded-lg p-3 space-y-2 text-sm">
+                                    <div className="flex justify-between items-center border-b border-slate-200 pb-1"><span className="font-medium text-slate-700">Annual Revenue:</span><span className="font-bold text-slate-900">{formatCurrency(currentRevenue || 0)}</span></div>
+                                    <div className="flex justify-between items-center border-b border-slate-200 pb-1"><span className="font-medium text-slate-700">12-Month Goal:</span><span className="font-bold text-slate-900">{formatCurrency(revenueGoal || 0)}</span></div>
+                                    <div className="flex justify-between items-center border-b border-slate-200 pb-1"><span className="font-medium text-slate-700">Revenue Gap:</span><span className="font-bold text-blue-600">{formatCurrency((parseFloat(revenueGoal) || 0) - (parseFloat(currentRevenue) || 0))}</span></div>
+                                    <div className="flex justify-between items-center"><span className="font-medium text-slate-700">Owner Hours/Week:</span><span className="font-bold text-slate-900">{ownerHours || '[X]'} hours</span></div>
+                                </div>
+                            </div>
 
-                                    {/* Current Situation */}
-                                    <div>
-                                        <h2 className="text-2xl font-bold text-slate-900 mb-4">Current Situation</h2>
-                                        <div className="bg-slate-50 rounded-lg p-4 space-y-3">
-                                            <div className="flex justify-between items-center border-b border-slate-200 pb-2">
-                                                <span className="font-medium text-slate-700">Annual Revenue:</span>
-                                                <span className="font-bold text-slate-900">{formatCurrency(currentRevenue || 0)}</span>
-                                            </div>
-                                            <div className="flex justify-between items-center border-b border-slate-200 pb-2">
-                                                <span className="font-medium text-slate-700">12-Month Goal:</span>
-                                                <span className="font-bold text-slate-900">{formatCurrency(revenueGoal || 0)}</span>
-                                            </div>
-                                            <div className="flex justify-between items-center border-b border-slate-200 pb-2">
-                                                <span className="font-medium text-slate-700">Revenue Gap:</span>
-                                                <span className="font-bold text-blue-600">{formatCurrency((parseFloat(revenueGoal) || 0) - (parseFloat(currentRevenue) || 0))}</span>
-                                            </div>
-                                            <div className="flex justify-between items-center">
-                                                <span className="font-medium text-slate-700">Owner Hours/Week:</span>
-                                                <span className="font-bold text-slate-900">{ownerHours || '[X]'} hours</span>
-                                            </div>
-                                        </div>
-                                    </div>
+                            <div className="avoid-break">
+                                <h2 className="text-xl font-bold text-slate-900 mb-3">Value Opportunities Identified</h2>
+                                <p className="text-slate-700 mb-3 text-sm">Through our discovery conversation and analysis of your operations, I've identified the following value opportunities:</p>
+                                <div className="space-y-2">
+                                    <div className="bg-green-50 border-l-4 border-green-500 p-3"><div className="flex justify-between items-center text-sm"><span className="font-medium text-slate-700">Conservative Estimate (Year 1):</span><span className="text-lg font-bold text-green-600">{formatCurrency(conservativeValue || 0)}</span></div></div>
+                                    <div className="bg-blue-50 border-l-4 border-blue-500 p-3"><div className="flex justify-between items-center text-sm"><span className="font-medium text-slate-700">Midpoint Estimate (Year 1):</span><span className="text-lg font-bold text-blue-600">{formatCurrency(midpointValue || 0)}</span></div></div>
+                                    <div className="bg-purple-50 border-l-4 border-purple-500 p-3"><div className="flex justify-between items-center text-sm"><span className="font-medium text-slate-700">Aggressive Estimate (Year 1):</span><span className="text-lg font-bold text-purple-600">{formatCurrency(aggressiveValue || 0)}</span></div></div>
+                                </div>
+                            </div>
 
-                                    {/* Value Identified */}
-                                    <div>
-                                        <h2 className="text-2xl font-bold text-slate-900 mb-4">Value Opportunities Identified</h2>
-                                        <p className="text-slate-700 mb-4">
-                                            Through our discovery conversation and analysis of your operations, I've identified the following value opportunities:
-                                        </p>
-                                        <div className="space-y-3">
-                                            <div className="bg-green-50 border-l-4 border-green-500 p-4">
-                                                <div className="flex justify-between items-center">
-                                                    <span className="font-medium text-slate-700">Conservative Estimate (Year 1):</span>
-                                                    <span className="text-xl font-bold text-green-600">{formatCurrency(conservativeValue || 0)}</span>
-                                                </div>
-                                            </div>
-                                            <div className="bg-blue-50 border-l-4 border-blue-500 p-4">
-                                                <div className="flex justify-between items-center">
-                                                    <span className="font-medium text-slate-700">Midpoint Estimate (Year 1):</span>
-                                                    <span className="text-xl font-bold text-blue-600">{formatCurrency(midpointValue || 0)}</span>
-                                                </div>
-                                            </div>
-                                            <div className="bg-purple-50 border-l-4 border-purple-500 p-4">
-                                                <div className="flex justify-between items-center">
-                                                    <span className="font-medium text-slate-700">Aggressive Estimate (Year 1):</span>
-                                                    <span className="text-xl font-bold text-purple-600">{formatCurrency(aggressiveValue || 0)}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                            {(quickWin1 || quickWin2 || quickWin3) && (
+                                <div className="avoid-break">
+                                    <h2 className="text-xl font-bold text-slate-900 mb-3">Immediate Quick Wins</h2>
+                                    <p className="text-slate-700 mb-2 text-sm">These are high-impact improvements we can implement in the first 30 days:</p>
+                                    <ul className="space-y-1 text-sm">
+                                        {quickWin1 && <li className="flex items-start gap-2"><span className="text-green-600 font-bold">✓</span><span className="text-slate-700">{quickWin1}</span></li>}
+                                        {quickWin2 && <li className="flex items-start gap-2"><span className="text-green-600 font-bold">✓</span><span className="text-slate-700">{quickWin2}</span></li>}
+                                        {quickWin3 && <li className="flex items-start gap-2"><span className="text-green-600 font-bold">✓</span><span className="text-slate-700">{quickWin3}</span></li>}
+                                    </ul>
+                                </div>
+                            )}
 
-                                    {/* Quick Wins */}
-                                    {(quickWin1 || quickWin2 || quickWin3) && (
-                                        <div>
-                                            <h2 className="text-2xl font-bold text-slate-900 mb-4">Immediate Quick Wins</h2>
-                                            <p className="text-slate-700 mb-4">
-                                                These are high-impact improvements we can implement in the first 30 days:
-                                            </p>
-                                            <ul className="space-y-2">
-                                                {quickWin1 && <li className="flex items-start gap-2"><span className="text-green-600 font-bold">✓</span><span className="text-slate-700">{quickWin1}</span></li>}
-                                                {quickWin2 && <li className="flex items-start gap-2"><span className="text-green-600 font-bold">✓</span><span className="text-slate-700">{quickWin2}</span></li>}
-                                                {quickWin3 && <li className="flex items-start gap-2"><span className="text-green-600 font-bold">✓</span><span className="text-slate-700">{quickWin3}</span></li>}
-                                            </ul>
+                            <div className="page-break-before">
+                                <h2 className="text-xl font-bold text-slate-900 mb-3">Service Options</h2>
+                                <p className="text-slate-700 mb-4 text-sm">I offer three ways to work together, depending on your timeline, budget, and level of involvement you want:</p>
+                                <div className="space-y-4">
+                                    {includeAudit && (
+                                        <div className="border-2 border-slate-200 rounded-lg p-4 avoid-break">
+                                            <div className="flex justify-between items-start mb-3">
+                                                <div><h3 className="text-lg font-bold text-slate-900">Option 1: Operations Audit</h3><p className="text-xs text-slate-600">2-week deep dive + detailed roadmap</p></div>
+                                                <div className="text-right"><div className="text-xl font-bold text-blue-600">{formatCurrency(auditFee || 0)}</div>{calcAuditROI > 0 && <div className="text-xs text-slate-600">{calcAuditROI}x ROI</div>}</div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <p className="text-slate-700 text-sm"><span className="font-semibold">What You Get:</span></p>
+                                                <ul className="space-y-1 text-xs text-slate-700">
+                                                    <li className="flex items-start gap-1"><span className="text-blue-600">•</span><span>Team management and KPI tracking</span></li>
+                                                    <li className="flex items-start gap-1"><span className="text-blue-600">•</span><span>Act as your COO without full-time cost</span></li>
+                                                </ul>
+                                                <p className="text-slate-700 mt-2 text-xs"><span className="font-semibold">Best For:</span> Business owners ready to scale significantly with consistent operational leadership.</p>
+                                            </div>
                                         </div>
                                     )}
-
-                                    {/* Service Options */}
-                                    <div>
-                                        <h2 className="text-2xl font-bold text-slate-900 mb-4">Service Options</h2>
-                                        <p className="text-slate-700 mb-6">
-                                            I offer three ways to work together, depending on your timeline, budget, and level of involvement you want:
-                                        </p>
-
-                                        <div className="space-y-6">
-                                            {/* Option 1: Audit */}
-                                            {includeAudit && (
-                                                <div className="border-2 border-slate-200 rounded-lg p-6 hover:border-blue-500 transition-colors">
-                                                    <div className="flex justify-between items-start mb-4">
-                                                        <div>
-                                                            <h3 className="text-xl font-bold text-slate-900">Option 1: Operations Audit</h3>
-                                                            <p className="text-sm text-slate-600">2-week deep dive + detailed roadmap</p>
-                                                        </div>
-                                                        <div className="text-right">
-                                                            <div className="text-2xl font-bold text-blue-600">{formatCurrency(auditFee || 0)}</div>
-                                                            {calcAuditROI > 0 && <div className="text-sm text-slate-600">{calcAuditROI}x ROI</div>}
-                                                        </div>
-                                                    </div>
-                                                    <div className="space-y-3">
-                                                        <p className="text-slate-700"><span className="font-semibold">What You Get:</span></p>
-                                                        <ul className="space-y-2 text-slate-700">
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>Complete operational analysis (financials, processes, team, systems)</span></li>
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>30-60 page written report with specific findings</span></li>
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>Prioritized action roadmap (0-30, 30-90, 90-180 days)</span></li>
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>Financial impact projections for each recommendation</span></li>
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>Implementation templates and checklists</span></li>
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>90-minute presentation of findings</span></li>
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>30-day follow-up call</span></li>
-                                                        </ul>
-                                                        <p className="text-slate-700 mt-4"><span className="font-semibold">Best For:</span> Business owners who want a clear roadmap and plan to implement themselves or with their team.</p>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Option 2: Implementation */}
-                                            {includeImplementation && (
-                                                <div className="border-2 border-blue-500 rounded-lg p-6 bg-blue-50">
-                                                    <div className="flex justify-between items-start mb-4">
-                                                        <div>
-                                                            <div className="inline-block bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded mb-2">RECOMMENDED</div>
-                                                            <h3 className="text-xl font-bold text-slate-900">Option 2: 90-Day Implementation</h3>
-                                                            <p className="text-sm text-slate-600">Audit + hands-on implementation support</p>
-                                                        </div>
-                                                        <div className="text-right">
-                                                            <div className="text-2xl font-bold text-blue-600">{formatCurrency(implementationFee || 0)}</div>
-                                                            {calcImplementationROI > 0 && <div className="text-sm text-slate-600">{calcImplementationROI}x ROI</div>}
-                                                        </div>
-                                                    </div>
-                                                    <div className="space-y-3">
-                                                        <p className="text-slate-700"><span className="font-semibold">What You Get:</span></p>
-                                                        <ul className="space-y-2 text-slate-700">
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>Everything in the Operations Audit</span></li>
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>Weekly strategy calls (12 total sessions)</span></li>
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>Hands-on implementation support</span></li>
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>Custom process documentation and SOPs</span></li>
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>Team training and onboarding systems</span></li>
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>Email/text support between calls</span></li>
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>Accountability and progress tracking</span></li>
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>Tool and software recommendations + setup</span></li>
-                                                        </ul>
-                                                        <p className="text-slate-700 mt-4"><span className="font-semibold">Best For:</span> Business owners who want guidance and support while implementing changes, without the commitment of a full fractional role.</p>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Option 3: Fractional COO */}
-                                            {includeFractional && (
-                                                <div className="border-2 border-slate-200 rounded-lg p-6 hover:border-blue-500 transition-colors">
-                                                    <div className="flex justify-between items-start mb-4">
-                                                        <div>
-                                                            <h3 className="text-xl font-bold text-slate-900">Option 3: Fractional COO</h3>
-                                                            <p className="text-sm text-slate-600">Ongoing operational leadership (6-month minimum)</p>
-                                                        </div>
-                                                        <div className="text-right">
-                                                            <div className="text-2xl font-bold text-blue-600">{formatCurrency(fractionalFee || 0)}/mo</div>
-                                                            {calcFractionalROI > 0 && <div className="text-sm text-slate-600">{calcFractionalROI}x ROI</div>}
-                                                        </div>
-                                                    </div>
-                                                    <div className="space-y-3">
-                                                        <p className="text-slate-700"><span className="font-semibold">What You Get:</span></p>
-                                                        <ul className="space-y-2 text-slate-700">
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>Everything in 90-Day Implementation, ongoing</span></li>
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>10-20 hours per month of dedicated time</span></li>
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>Weekly operational meetings</span></li>
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>Strategic planning and execution</span></li>
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>Team management and leadership</span></li>
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>KPI tracking and reporting</span></li>
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>Hiring, training, and team development</span></li>
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>On-demand operational support</span></li>
-                                                            <li className="flex items-start gap-2"><span className="text-blue-600">•</span><span>Act as your COO without the full-time cost</span></li>
-                                                        </ul>
-                                                        <p className="text-slate-700 mt-4"><span className="font-semibold">Best For:</span> Business owners ready to scale significantly and who need consistent operational leadership and execution.</p>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Investment & ROI */}
-                                    <div>
-                                        <h2 className="text-2xl font-bold text-slate-900 mb-4">Investment & Return</h2>
-                                        <p className="text-slate-700 mb-4">
-                                            Based on the {formatCurrency(calcMidpoint)} in identified value, here's what your return on investment looks like:
-                                        </p>
-                                        <div className="bg-slate-50 rounded-lg p-6 space-y-4">
-                                            {includeAudit && auditFee && (
-                                                <div>
-                                                    <div className="flex justify-between items-center mb-2">
-                                                        <span className="font-semibold text-slate-700">Operations Audit:</span>
-                                                        <span className="font-bold text-slate-900">{formatCurrency(auditFee)}</span>
-                                                    </div>
-                                                    <p className="text-sm text-slate-600">
-                                                        If you capture just 50% of identified value ({formatCurrency(calcMidpoint * 0.5)}), 
-                                                        your ROI is <span className="font-bold text-green-600">{(calcMidpoint * 0.5 / parseFloat(auditFee)).toFixed(1)}x</span> in Year 1.
-                                                    </p>
-                                                </div>
-                                            )}
-                                            {includeImplementation && implementationFee && (
-                                                <div>
-                                                    <div className="flex justify-between items-center mb-2">
-                                                        <span className="font-semibold text-slate-700">90-Day Implementation:</span>
-                                                        <span className="font-bold text-slate-900">{formatCurrency(implementationFee)}</span>
-                                                    </div>
-                                                    <p className="text-sm text-slate-600">
-                                                        If you capture 60% of identified value ({formatCurrency(calcMidpoint * 0.6)}), 
-                                                        your ROI is <span className="font-bold text-green-600">{(calcMidpoint * 0.6 / parseFloat(implementationFee)).toFixed(1)}x</span> in Year 1.
-                                                    </p>
-                                                </div>
-                                            )}
-                                            {includeFractional && fractionalFee && (
-                                                <div>
-                                                    <div className="flex justify-between items-center mb-2">
-                                                        <span className="font-semibold text-slate-700">Fractional COO (6 months):</span>
-                                                        <span className="font-bold text-slate-900">{formatCurrency(parseFloat(fractionalFee) * 6)}</span>
-                                                    </div>
-                                                    <p className="text-sm text-slate-600">
-                                                        If you capture 75% of identified value ({formatCurrency(calcMidpoint * 0.75)}), 
-                                                        your ROI is <span className="font-bold text-green-600">{(calcMidpoint * 0.75 / (parseFloat(fractionalFee) * 6)).toFixed(1)}x</span> in Year 1.
-                                                    </p>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="bg-green-50 border-l-4 border-green-500 p-4 mt-4">
-                                            <p className="font-semibold text-green-900">The Bottom Line:</p>
-                                            <p className="text-slate-700 mt-1">
-                                                This isn't an expense—it's an investment with measurable returns. Every dollar you invest 
-                                                returns multiple dollars in profit, time saved, and business value created.
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {/* Why Work With Me */}
-                                    <div>
-                                        <h2 className="text-2xl font-bold text-slate-900 mb-4">Why Work With Me</h2>
-                                        <p className="text-slate-700 mb-4">
-                                            I'm not a theorist or academic consultant. I'm an operator who has built and scaled multiple businesses:
-                                        </p>
-                                        <ul className="space-y-2 text-slate-700">
-                                            <li className="flex items-start gap-2">
-                                                <span className="text-blue-600 font-bold">✓</span>
-                                                <span><span className="font-semibold">Gun Shop Owner:</span> Started from nothing and grew to $250K+ in annual revenue as the sole employee</span>
-                                            </li>
-                                            <li className="flex items-start gap-2">
-                                                <span className="text-blue-600 font-bold">✓</span>
-                                                <span><span className="font-semibold">Director of Operations:</span> Led operations for a security technology company, implementing scalable systems</span>
-                                            </li>
-                                            <li className="flex items-start gap-2">
-                                                <span className="text-blue-600 font-bold">✓</span>
-                                                <span><span className="font-semibold">Pool Service Business:</span> Built Cobalt Pools from scratch to profitability in under 12 months</span>
-                                            </li>
-                                            <li className="flex items-start gap-2">
-                                                <span className="text-blue-600 font-bold">✓</span>
-                                                <span><span className="font-semibold">Marine Corps Veteran:</span> 5 years of leadership, process discipline, and mission execution</span>
-                                            </li>
-                                            <li className="flex items-start gap-2">
-                                                <span className="text-blue-600 font-bold">✓</span>
-                                                <span><span className="font-semibold">Serial Entrepreneur:</span> 20+ years of building, operating, and optimizing businesses</span>
-                                            </li>
-                                        </ul>
-                                        <p className="text-slate-700 mt-4">
-                                            I understand the challenges of wearing every hat, working too many hours, and feeling stuck between doing the work 
-                                            and growing the business. I've been there—and I know exactly how to get you unstuck.
-                                        </p>
-                                    </div>
-
-                                    {/* Next Steps */}
-                                    <div>
-                                        <h2 className="text-2xl font-bold text-slate-900 mb-4">Next Steps</h2>
-                                        <p className="text-slate-700 mb-4">
-                                            If you're ready to transform your operations and capture the {formatCurrency(calcMidpoint)} in value we've identified:
-                                        </p>
-                                        <ol className="space-y-3 text-slate-700">
-                                            <li className="flex items-start gap-3">
-                                                <span className="font-bold text-blue-600 text-lg">1.</span>
-                                                <span><span className="font-semibold">Review this proposal</span> and decide which option fits your timeline and budget</span>
-                                            </li>
-                                            <li className="flex items-start gap-3">
-                                                <span className="font-bold text-blue-600 text-lg">2.</span>
-                                                <span><span className="font-semibold">Schedule a follow-up call</span> if you have any questions or want to discuss customization</span>
-                                            </li>
-                                            <li className="flex items-start gap-3">
-                                                <span className="font-bold text-blue-600 text-lg">3.</span>
-                                                <span><span className="font-semibold">Sign the agreement</span> and we'll schedule our kickoff within 48 hours</span>
-                                            </li>
-                                        </ol>
-                                        <div className="bg-blue-50 border-l-4 border-blue-600 p-4 mt-6">
-                                            <p className="font-semibold text-blue-900">Time-Sensitive Opportunity:</p>
-                                            <p className="text-slate-700 mt-1">
-                                                I typically work with 3-5 clients at a time to ensure quality. I currently have availability, 
-                                                but my calendar fills quickly. If you want to move forward, let's connect in the next 7 days.
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {/* Contact Information */}
-                                    <div className="border-t-2 border-slate-200 pt-6">
-                                        <h2 className="text-2xl font-bold text-slate-900 mb-4">Let's Talk</h2>
-                                        <p className="text-slate-700 mb-4">
-                                            I'm excited about the opportunity to help you build a business that runs without you being the bottleneck.
-                                        </p>
-                                        <div className="bg-slate-50 rounded-lg p-6">
-                                            <p className="font-bold text-lg text-slate-900 mb-2">{yourName}</p>
-                                            <p className="text-slate-700 mb-4">{yourTitle}</p>
-                                            {yourPhone && <p className="text-slate-700">Phone: {yourPhone}</p>}
-                                            {yourEmail && <p className="text-slate-700">Email: {yourEmail}</p>}
-                                        </div>
-                                    </div>
-
-                                    {/* Footer */}
-                                    <div className="text-center text-sm text-slate-500 pt-6 border-t border-slate-200">
-                                        <p>This proposal is valid for 30 days from {proposalDate}</p>
-                                        <p className="mt-2">Confidential - For {clientName || '[Client Name]'} Only</p>
-                                    </div>
                                 </div>
+                            </div>
+
+                            <div className="page-break-before avoid-break">
+                                <h2 className="text-xl font-bold text-slate-900 mb-3">Investment & Return</h2>
+                                <p className="text-slate-700 mb-3 text-sm">Based on the {formatCurrency(calcMidpoint)} in identified value, here's what your return on investment looks like:</p>
+                                <div className="bg-slate-50 rounded-lg p-4 space-y-3 text-sm">
+                                    {includeAudit && auditFee && (
+                                        <div>
+                                            <div className="flex justify-between items-center mb-1"><span className="font-semibold text-slate-700">Operations Audit:</span><span className="font-bold text-slate-900">{formatCurrency(auditFee)}</span></div>
+                                            <p className="text-xs text-slate-600">If you capture just 50% of identified value ({formatCurrency(calcMidpoint * 0.5)}), your ROI is <span className="font-bold text-green-600">{(calcMidpoint * 0.5 / parseFloat(auditFee)).toFixed(1)}x</span> in Year 1.</p>
+                                        </div>
+                                    )}
+                                    {includeImplementation && implementationFee && (
+                                        <div>
+                                            <div className="flex justify-between items-center mb-1"><span className="font-semibold text-slate-700">90-Day Implementation:</span><span className="font-bold text-slate-900">{formatCurrency(implementationFee)}</span></div>
+                                            <p className="text-xs text-slate-600">If you capture 60% of identified value ({formatCurrency(calcMidpoint * 0.6)}), your ROI is <span className="font-bold text-green-600">{(calcMidpoint * 0.6 / parseFloat(implementationFee)).toFixed(1)}x</span> in Year 1.</p>
+                                        </div>
+                                    )}
+                                    {includeFractional && fractionalFee && (
+                                        <div>
+                                            <div className="flex justify-between items-center mb-1"><span className="font-semibold text-slate-700">Fractional COO (6 months):</span><span className="font-bold text-slate-900">{formatCurrency(parseFloat(fractionalFee) * 6)}</span></div>
+                                            <p className="text-xs text-slate-600">If you capture 75% of identified value ({formatCurrency(calcMidpoint * 0.75)}), your ROI is <span className="font-bold text-green-600">{(calcMidpoint * 0.75 / (parseFloat(fractionalFee) * 6)).toFixed(1)}x</span> in Year 1.</p>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="bg-green-50 border-l-4 border-green-500 p-3 mt-3">
+                                    <p className="font-semibold text-green-900 text-sm">The Bottom Line:</p>
+                                    <p className="text-slate-700 mt-1 text-xs">This isn't an expense—it's an investment with measurable returns. Every dollar you invest returns multiple dollars in profit, time saved, and business value created.</p>
+                                </div>
+                            </div>
+
+                            <div className="avoid-break">
+                                <h2 className="text-xl font-bold text-slate-900 mb-3">Why Work With Me</h2>
+                                <p className="text-slate-700 mb-3 text-sm">I'm not a theorist or academic consultant. I'm an operator who has built and scaled multiple businesses:</p>
+                                <ul className="space-y-1.5 text-xs text-slate-700">
+                                    <li className="flex items-start gap-2"><span className="text-blue-600 font-bold">✓</span><span><span className="font-semibold">Gun Shop Owner:</span> Started from nothing and grew to $250K+ in annual revenue as the sole employee</span></li>
+                                    <li className="flex items-start gap-2"><span className="text-blue-600 font-bold">✓</span><span><span className="font-semibold">Director of Operations:</span> Led operations for a security technology company, implementing scalable systems</span></li>
+                                    <li className="flex items-start gap-2"><span className="text-blue-600 font-bold">✓</span><span><span className="font-semibold">Pool Service Business:</span> Built Cobalt Pools from scratch to profitability in under 12 months</span></li>
+                                    <li className="flex items-start gap-2"><span className="text-blue-600 font-bold">✓</span><span><span className="font-semibold">Marine Corps Veteran:</span> 5 years of leadership, process discipline, and mission execution</span></li>
+                                    <li className="flex items-start gap-2"><span className="text-blue-600 font-bold">✓</span><span><span className="font-semibold">Serial Entrepreneur:</span> 20+ years of building, operating, and optimizing businesses</span></li>
+                                </ul>
+                                <p className="text-slate-700 mt-3 text-sm">I understand the challenges of wearing every hat, working too many hours, and feeling stuck between doing the work and growing the business. I've been there—and I know exactly how to get you unstuck.</p>
+                            </div>
+
+                            <div className="page-break-before avoid-break">
+                                <h2 className="text-xl font-bold text-slate-900 mb-3">Next Steps</h2>
+                                <p className="text-slate-700 mb-3 text-sm">If you're ready to transform your operations and capture the {formatCurrency(calcMidpoint)} in value we've identified:</p>
+                                <ol className="space-y-2 text-xs text-slate-700">
+                                    <li className="flex items-start gap-2"><span className="font-bold text-blue-600">1.</span><span><span className="font-semibold">Review this proposal</span> and decide which option fits your timeline and budget</span></li>
+                                    <li className="flex items-start gap-2"><span className="font-bold text-blue-600">2.</span><span><span className="font-semibold">Schedule a follow-up call</span> if you have any questions or want to discuss customization</span></li>
+                                    <li className="flex items-start gap-2"><span className="font-bold text-blue-600">3.</span><span><span className="font-semibold">Sign the agreement</span> and we'll schedule our kickoff within 48 hours</span></li>
+                                </ol>
+                                <div className="bg-blue-50 border-l-4 border-blue-600 p-3 mt-4">
+                                    <p className="font-semibold text-blue-900 text-sm">Time-Sensitive Opportunity:</p>
+                                    <p className="text-slate-700 mt-1 text-xs">I typically work with 3-5 clients at a time to ensure quality. I currently have availability, but my calendar fills quickly. If you want to move forward, let's connect in the next 7 days.</p>
+                                </div>
+                            </div>
+
+                            <div className="border-t-2 border-slate-200 pt-4 avoid-break">
+                                <h2 className="text-xl font-bold text-slate-900 mb-3">Let's Talk</h2>
+                                <p className="text-slate-700 mb-3 text-sm">I'm excited about the opportunity to help you build a business that runs without you being the bottleneck.</p>
+                                <div className="bg-slate-50 rounded-lg p-4">
+                                    <p className="font-bold text-base text-slate-900 mb-1">{yourName}</p>
+                                    <p className="text-slate-700 text-sm mb-2">{yourTitle}</p>
+                                    {yourPhone && <p className="text-slate-700 text-xs">Phone: {yourPhone}</p>}
+                                    {yourEmail && <p className="text-slate-700 text-xs">Email: {yourEmail}</p>}
+                                </div>
+                            </div>
+
+                            <div className="text-center text-xs text-slate-500 pt-4 border-t border-slate-200">
+                                <p>This proposal is valid for 30 days from {proposalDate}</p>
+                                <p className="mt-1">Confidential - For {clientName || '[Client Name]'} Only</p>
                             </div>
                         </div>
                     </div>
                 </div>
-            );
-        }
+            </div>
+        </div>
+    );
+}
 
-        ReactDOM.render(<ProposalGenerator />, document.getElementById('root'));
+ReactDOM.render(<ProposalGenerator />, document.getElementById('root'));
     </script>
 </body>
 </html>
